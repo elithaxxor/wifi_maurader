@@ -21,3 +21,10 @@ View full file here →
 (Manages phishing template switching and previews for the evil twin.)
 
 ⸻
+
+✅ encrypt_portals.py:
+	•	Generates an AES key (saved to .enc_key)
+	•	Encrypts each file inside phishing_templates/<template>/
+	•	Stores output as .enc files alongside originals
+
+ 
