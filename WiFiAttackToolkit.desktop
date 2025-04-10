@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=WiFi Attack Toolkit
+Comment=Launch the Evil Twin Toolkit interface
+Exec=sh -c './run_gui.sh'
+Icon=utilities-terminal
+Terminal=true
+Categories=Utility;
