@@ -1,6 +1,3 @@
-# wifi_attack_gui/modules/phishing_portal_loader.py
-# Portal Template Manager and Loader for Evil Twin GUI
-
 import os
 import shutil
 from pathlib import Path
@@ -34,24 +31,7 @@ class PortalTemplateManager:
         selected_path = self.template_path / name
         if not selected_path.exists():
             raise FileNotFoundError(f"Template '{name}' not found.")
-
-        # Clean current portal folder
         if self.portal_path.exists():
             shutil.rmtree(self.portal_path)
         shutil.copytree(selected_path, self.portal_path)
         print(f"[*] Activated phishing portal template: {name}")
-
-
-# Example CLI usage (replace with GUI in main app)
-if __name__ == '__main__':
-    manager = PortalTemplateManager()
-    print("Available Templates:")
-    for idx, name in enumerate(manager.list_templates(), 1):
-        print(f"[{idx}] {name}")
-
-    choice = input("Select a template by name: ")
-    try:
-        manager.activate_template(choice)
-        print(f"Successfully loaded '{choice}'")
-    except Exception as e:
-        print(f"Error: {e}")
