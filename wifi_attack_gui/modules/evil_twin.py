@@ -5,6 +5,19 @@ from pathlib import Path
 PORTAL_DIR = Path("./phishing_portal")
 TEMPLATE_DIR = Path("./phishing_templates")
 
+class EvilTwinAP:
+    def __init__(self):
+        self.ssid = "Free_Public_WiFi"
+        self.running = False
+
+    def start(self):
+        print(f"[*] Starting Evil Twin AP with SSID: {self.ssid}")
+        self.running = True
+
+    def stop(self):
+        print("[*] Stopping Evil Twin AP")
+        self.running = False
+        
 class PortalTemplateManager:
     def __init__(self, portal_path=PORTAL_DIR, template_path=TEMPLATE_DIR):
         self.portal_path = portal_path
