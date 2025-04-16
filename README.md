@@ -1,4 +1,4 @@
-# Wi-Fi Attack Toolkit (Red Team Edition) 💀
+# Wi-Fi Attack Toolkit 💀v1.0
 
 A cross-platform Evil Twin and OSINT attack suite with full GUI and CLI support.
 
