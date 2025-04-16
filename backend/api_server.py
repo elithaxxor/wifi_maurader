@@ -6,7 +6,9 @@ from pydantic import BaseModel
 import subprocess
 import os
 from pathlib import Path
-
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from pathlib import Path
 from modules.evil_twin import EvilTwinAP
 from modules.phishing_portal_loader import PortalTemplateManager, prompt_passphrase, load_fernet_from_passphrase
 from modules.packet_capture import PacketCapture, enable_monitor_mode, disable_monitor_mode
@@ -37,6 +39,22 @@ class TemplatePayload(BaseModel):
 class TerminalInput(BaseModel):
     cmd: str
 
+SNAPSHOT_DIR = Path("./snapshots")
+
+@app.get("/api/snapshots")
+def list_snapshots():
+    results = []
+    if not SNAPSHOT_DIR.exists():
+        SNAPSHOT_DIR.mkdir(parents=True)
+    for file in sorted(SNAPSHOT_DIR.glob("*.json")):
+        with open(file, "r") as f:
+            data = json.load(f)
+            results.append({
+                "timestamp": file.stem,
+                "data": data
+            })
+    return JSONResponse(content=results)
+    
 @app.get("/api/templates")
 def get_templates():
     return template_manager.list_templates()
